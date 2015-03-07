@@ -88,35 +88,74 @@ aserver.exchange(oauth2orize.exchange.password(function(client, username, passwo
 // Exchange refreshToken for access token.
 // test: http POST http://localhost:3000/token client_id=th3official grant_type=refresh_token client_secret=asdf refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkIjoxNDI1NzE1MTM4MDkyLCJ0b2tlbiI6IjI4Wk01M1NRY2pZUCswcUU4U01pNVlXb3dzdkdyMkN5UnpDSXFJRWpiRm89IiwiaWF0IjoxNDI1NzE1MTM4fQ.mUBSwcBrBcC6Ys8XhXrkugJ-ZkiYME6bYAZVIramLbs"
 const refreshToken = Promise.promisify(oauth2orize.exchange.refreshToken);
-aserver.exchange(oauth2orize.exchange.refreshToken(function(client, refreshTokenJWT, scope, done) {
-  co(function* () {
-    console.log("here");
-    const refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
-    // TODO: check if IP address and clientID match
-    if (!refreshToken) return done(null, false);
-  user = {_id:"user id"}
+aserver.exchange(oauth2orize.exchange.refreshToken(
+  // co.wrap breaks fn.length (# args in fn prototype) so oauth2orize calls without `scope`
+  // this hack works because we don't use `scope`
+  co.wrap(function* (client, refreshTokenJWT, /*scope,*/ done) {
+    try {
+      const refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
+      // TODO: check if IP address and clientID match
+      if (!refreshToken) return done(null, false);
+      //user = {_id:"user id"}
+      throw new Error("wtf");
+      // try {
+      //   const user = yield User.findById(refreshToken._user).exec();
+      // } catch (err) {
+      //   return done(err);
+      // }
 
-    // try {
-    //   const user = yield User.findById(refreshToken._user).exec();
-    // } catch (err) {
-    //   return done(err);
-    // }
+      // if (!user) { return done(null, false); }
 
-    // if (!user) { return done(null, false); }
+      // TODO: if (refreshToken.created < user.lastLogout/expire ) don't provide access token for client. check clientId matches
 
-    // TODO: if (refreshToken.created < user.lastLogout/expire ) don't provide access token for client. check clientId matches
+      var accessToken = generateToken(client, user);
+      var refreshTokenx = generateToken(client, user);
 
-    var accessToken = generateToken(client, user);
-    var refreshTokenx = generateToken(client, user);
+      return done(null, accessToken, refreshTokenx, {
+        'expires_in': config.get('security:tokenLife')
+      });
+    } catch(err) {
+      console.error(err.stack);
+      throw new Error(err);
+    }
+    
+  })
 
-    return done(null, accessToken, refreshTokenx, {
-      'expires_in': config.get('security:tokenLife')
-    });
-  }).catch(function(err) {
-    console.error(err.stack);
-  });
 
-}));
+  // function (client, refreshTokenJWT, scope, done) {
+  //   co(function* () {
+  //     // try {
+  //       const refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
+  //       // TODO: check if IP address and clientID match
+  //       if (!refreshToken) return done(null, false);
+  //       user = {_id:"user id"}
+
+  //       // try {
+  //       //   const user = yield User.findById(refreshToken._user).exec();
+  //       // } catch (err) {
+  //       //   return done(err);
+  //       // }
+
+  //       // if (!user) { return done(null, false); }
+
+  //       // TODO: if (refreshToken.created < user.lastLogout/expire ) don't provide access token for client. check clientId matches
+
+  //       var accessToken = generateToken(client, user);
+  //       var refreshTokenx = generateToken(client, user);
+
+  //       return done(null, accessToken, refreshTokenx, {
+  //         'expires_in': config.get('security:tokenLife')
+  //       });
+  //     // } catch(err) {
+  //     //   console.error(err.stack);
+  //     // }
+  //   },function*(err) {
+  //     console.log(err.stack);
+  //     throw new Error(err);
+  //   })
+  // }   
+
+));
 
 // token endpoint
 //
