@@ -18,7 +18,7 @@ var generateToken = function (client, user) {
   const payload = {
     _user: user._id,
     _client: client._id,
-    created: Date.now(),
+    created: Date.now(), // redundant, jwt adds iat already
     token: crypto.randomBytes(32).toString('base64')
   }
   return jwt.sign(payload, config.get('security:jwtSecret'));
@@ -63,13 +63,14 @@ var generateToken = function (client, user) {
 };
 
 // Exchange username & password for access token.
+// test: http POST http://localhost:3000/token client_id=th3official grant_type=password client_secret=asdf username=un password=passwo
 aserver.exchange(oauth2orize.exchange.password(function(client, username, password, scope, done) {
   // try {
   //   const user = yield User.findOne({ username: username }).exec();
   // } catch (err) {
   //   return done(err);
   // }
-  user = {user:"me"}
+  user = {_id:"user id"}
 
   // if (!user || !user.checkPassword(password)) { return done(null, false); }
 
@@ -83,9 +84,10 @@ aserver.exchange(oauth2orize.exchange.password(function(client, username, passwo
 }));
 
 // Exchange refreshToken for access token.
+// test: http POST http://localhost:3000/token client_id=th3official grant_type=refresh_token client_secret=asdf refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkIjoxNDI1NzE1MTM4MDkyLCJ0b2tlbiI6IjI4Wk01M1NRY2pZUCswcUU4U01pNVlXb3dzdkdyMkN5UnpDSXFJRWpiRm89IiwiaWF0IjoxNDI1NzE1MTM4fQ.mUBSwcBrBcC6Ys8XhXrkugJ-ZkiYME6bYAZVIramLbs"
 aserver.exchange(oauth2orize.exchange.refreshToken(function(client, refreshTokenJWT, scope, done) {
   const refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
-
+console.log(refreshToken)
   // TODO: check if IP address and clientID match
   if (!refreshToken) return done(null, false);
 
@@ -100,9 +102,9 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function(client, refreshToken
   // TODO: if (refreshToken.created < user.lastLogout ) don't provide access token for client. check clientId matches
 
   var accessToken = generateToken(client, user);
-  var refreshToken = generateToken(client, user);
+  var refreshTokenx = generateToken(client, user);
 
-  return done(null, accessToken, refreshToken, {
+  return done(null, accessToken, refreshTokenx, {
     'expires_in': config.get('security:tokenLife')
   });
 }));
