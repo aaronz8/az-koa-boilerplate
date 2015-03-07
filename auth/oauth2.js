@@ -1,7 +1,8 @@
-var oauth2orize = require('oauth2orize');
-var passport = require('passport');
+var oauth2orize = require('koa-oauth2orize');
+var passport = require('koa-passport');
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
+var compose = require('koa-compose');
 
 var config = require('../config');
 
@@ -68,6 +69,7 @@ aserver.exchange(oauth2orize.exchange.password(function(client, username, passwo
   // } catch (err) {
   //   return done(err);
   // }
+  user = {user:"me"}
 
   // if (!user || !user.checkPassword(password)) { return done(null, false); }
 
@@ -112,8 +114,8 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function(client, refreshToken
 // exchange middleware will be invoked to handle the request.  Clients must
 // authenticate when making requests to this endpoint.
 
-exports.token = [
+exports.token = compose([
+  aserver.errorHandler(),
   passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
-  aserver.token(),
-  aserver.errorHandler()
-];
+  aserver.token()
+]);
