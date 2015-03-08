@@ -1,3 +1,6 @@
+// TODO: mount oauth2 app at /oauth2 so it's a self contained module
+
+
 // dependencies
 var debug   = require('debug')('th3')
   , logger  = require('koa-logger')
@@ -27,6 +30,9 @@ require('./auth');
 
 // API routes
 app.post('/token', require('./auth/oauth2').token);
+app.get('/', passport.authenticate("bearer", { session: false }), function*() {
+  this.body="here";
+})
 
 // error handler
 app.on('error', function(err){

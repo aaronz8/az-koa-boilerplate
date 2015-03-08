@@ -1,11 +1,11 @@
-var passport = require('koa-passport');
-var BasicStrategy = require('passport-http').BasicStrategy;
-var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
-var BearerStrategy = require('passport-http-bearer').Strategy;
+var co                     = require('co')
+  , jwt                    = require('jsonwebtoken')
+  , passport               = require('koa-passport')
+  , BasicStrategy          = require('passport-http').BasicStrategy
+  , ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
+  , BearerStrategy         = require('passport-http-bearer').Strategy
+;
 
-var co = require('co');
-
-var jwt = require('jsonwebtoken');
 var config = require('../config');
 
 //var User = require('../model/user');
@@ -16,7 +16,7 @@ var config = require('../config');
 // (registered but untrusted since anyone can discover and spoof clientid+secret from web app)
 function authenticateClient(clientId, clientSecret, done) {
   console.log("authenticateClient");
-  if (clientId === "th3official") { return done(null, {client: "this is a client"}); }
+  if (clientId === "th3official") { return done(null, {client: "this is a client", _id: "th3official"}); }
   // try {
   //   var client = yield Client.findOne({ clientId: clientId, clientSecret: clientSecret }).exec();
   //   if (!client) { return done(null, false); }
@@ -35,26 +35,32 @@ passport.use(new ClientPasswordStrategy(authenticateClient));
 // 3. If not expired, fetch and return user
 passport.use(new BearerStrategy(
   function(accessTokenJWT, done) {
-    console.log("bearerstrategy");
-    // return co(function*(accessTokenJWT, done) {
-    //   const accessToken = jwt.verify(accessTokenJWT, config.get('security:jwtSecret'));
-    //   if (!accessToken) return done(null, false);
+    try {
+      const accessToken = jwt.verify(accessTokenJWT, config.get('security:jwtSecret'));
+    } catch (err) {
+      return done(null, false, { message: 'Invalid access_token'});
+    }
 
-    //   // If expired, return "token expired"
-    //   if( Math.round((Date.now()-accessToken.created)/1000) > config.get('security:tokenLife') ) {
-    //     return done(null, false, { message: 'Token expired' });
-    //   }
+    // { _client: 'th3official',
+    //   iat: 1425773036,
+    //   exp: 1425989036,
+    //   iss: 'th3',
+    //   sub: 'user id' }
+  
+    // If expired, return "token expired"
+    if( accessToken.exp < Date.now()/1000 ) {
+      return done(null, false, { message: 'Token expired' });
+    }
 
-    //   try {
-    //     const user = {lol:true}//yield User.findById(accessToken._user).exec();
-    //   } catch (err) {
-    //     return done(err);
-    //   }
+    try {
+      const user = {lol:true}//yield User.findById(accessToken.sub).exec();
+    } catch (err) {
+      return done(err);
+    }
 
-    //   if (!user) { return done(null, false, { message: 'Unknown user' }); }
+    if (!user) { return done(null, false, { message: 'Unknown user' }); }
 
-    //   var info = { scope: '*' };
-    //   done(null, user, info);
-    // })
+    var info = { scope: '*' };
+    done(null, user, info);
   }
 ));
