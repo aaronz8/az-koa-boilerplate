@@ -1,24 +1,25 @@
 {
-    "port": 1337,
-    "security": {
-        "tokenLife" : 3600,
-        "jwtSecret" : "secreeeet"
+  "port": 1337,
+  "security": {
+    "accessTokenLife" : 60,
+    "refreshTokenLife" : 20160,
+    "jwtSecret" : "secreeeet"
+  },
+  "mongoose": {
+    "uri": "mongodb://localhost/apiDB"
+  },
+  "default": {
+    "api": {
+      "version" : "v1"
     },
-    "mongoose": {
-        "uri": "mongodb://localhost/apiDB"
+    "user": {
+      "username": "myapi",
+      "password": "abc1234"
     },
-    "default": {
-        "api": {
-            "version" : "v1"
-        },
-        "user": {
-            "username": "myapi",
-            "password": "abc1234"
-        },
-        "client": {
-            "name": "Android API v1",
-            "clientId": "android",
-            "clientSecret": "SomeRandomCharsAndNumbers"
-        }
+    "client": {
+      "name": "Android API v1",
+      "clientId": "android",
+      "clientSecret": "SomeRandomCharsAndNumbers"
     }
+  }
 }

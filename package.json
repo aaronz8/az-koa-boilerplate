@@ -45,7 +45,9 @@
     "oauth2orize": "^1.0.1",
     "passport-http": "^0.2.2",
     "passport-http-bearer": "^1.0.1",
-    "passport-oauth2-client-password": "^0.1.2"
+    "passport-oauth2-client-password": "^0.1.2",
+    "sails-redis": "^0.10.3",
+    "waterline": "^0.10.18"
   },
   "devDependencies": {
     "debug": "^2.1.2"
