@@ -23,7 +23,7 @@ require('./database')(app, [require('./th-auth/models/refresh-token-model')]);
 app.use(logger());
 app.use(bodyParser());
 app.use(passport.initialize());
-app.use(cors({ origin:true, credentials:true }));
+app.use(cors({ origin:true, credentials:true, headers:["authorization", "content-type", "accept"] }));
 app.use(router(app));
 app.use(favicon(__dirname + '/public/favicon.ico'));
 
