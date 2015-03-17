@@ -17,14 +17,12 @@ var aserver = oauth2orize.createServer();
 function generateTokens (client, user) {
 
   const accessTokenPayload = {
-    _client: client._id, // TODO: unneeded?
     user: user,
     type: "accessToken",
     jti: crypto.randomBytes(32).toString('base64') // differentiates accesstoken and refreshtoken
   };
 
   const refreshTokenPayload = {
-    _client: client._id, // TODO: unneeded?
     type: "refreshToken",
     jti: crypto.randomBytes(32).toString('base64') // differentiates accesstoken and refreshtoken
   };
@@ -130,6 +128,18 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
 exports.token = compose([
   aserver.errorHandler(),
   passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  aserver.token()
+]);
+
+// login endpoint
+// 
+// Only for first party client!
+exports.login = compose([
+  aserver.errorHandler(),
+  function*(next) {
+    this.request.body.grant_type = "password";
+    yield next;
+  },
   aserver.token()
 ]);
 

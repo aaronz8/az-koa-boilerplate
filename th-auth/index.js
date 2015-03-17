@@ -9,6 +9,7 @@ require('./auth');
 
 auth
   .use(router(auth))
+  .post('/login', require('./oauth2').login)
   .post('/token', require('./oauth2').token)
   .post('/logout', require('./oauth2').logout);
 
