@@ -136,10 +136,6 @@ exports.token = compose([
 // Only for first party client!
 exports.login = compose([
   aserver.errorHandler(),
-  function*(next) {
-    this.request.body.grant_type = "password";
-    yield next;
-  },
   aserver.token()
 ]);
 
