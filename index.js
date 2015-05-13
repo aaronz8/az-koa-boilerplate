@@ -1,5 +1,5 @@
 // dependencies
-var debug      = require('debug')('th3')
+var debug      = require('debug')('az')
   , logger     = require('koa-logger')
   , router     = require('koa-router')
   , mount      = require('koa-mount')
@@ -10,13 +10,13 @@ var debug      = require('debug')('th3')
   , koa        = require('koa')
   , app        = module.exports = koa()
   
-  , thAuth     = require('./th-auth')
+  , azAuth     = require('./az-auth')
 ;
 
 // database
 // TODO: fix this so models can be loaded from several places
 require('./database')(app, [require('./th-auth/models/refresh-token-model')]);
-//app.use(require('./database')(thAuth.models));
+//app.use(require('./database')(azAuth.models));
 
 
 // middleware
@@ -28,7 +28,7 @@ app.use(router(app));
 app.use(favicon(__dirname + '/public/favicon.ico'));
 
 // Modules
-app.use(mount('/oauth2', thAuth.middleware));
+app.use(mount('/oauth2', azAuth.middleware));
 
 // API routes
 app.get('/', passport.authenticate("bearer", { session: false }), function*() {

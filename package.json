@@ -1,8 +1,7 @@
 {
-  "name": "th3",
-  "description": "Thinkerous v3 - Koa, CORS, Elasticsearch",
+  "name": "az-koa-boilerplate",
+  "description": "Boilerplate with Koa, CORS, oauth",
   "version": "0.0.0",
-  "private": true,
   "author": "Aaron Zhang <aaron@thinkero.us>",
   "contributors": [
     {}
