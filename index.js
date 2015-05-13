@@ -15,7 +15,7 @@ var debug      = require('debug')('az')
 
 // database
 // TODO: fix this so models can be loaded from several places
-require('./database')(app, [require('./th-auth/models/refresh-token-model')]);
+require('./database')(app, [require('./az-auth/models/refresh-token-model')]);
 //app.use(require('./database')(azAuth.models));
 
 
