@@ -1,9 +1,8 @@
-var mount = require('koa-mount')
-  , router = require('koa-router')
-  , passport = require('koa-passport')
+var router = require('koa-router')
   , koa = require('koa')
   , auth = koa()
 ;
+require('koa-passport');
 
 require('./auth');
 

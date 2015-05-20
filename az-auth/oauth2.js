@@ -1,10 +1,10 @@
-var oauth2orize = require('koa-oauth2orize');
-var passport = require('koa-passport');
-var jwt = require('jsonwebtoken');
-var crypto = require('crypto');
-var compose = require('koa-compose');
-var co = require('co');
-var Promise = require('bluebird');
+var oauth2orize = require('koa-oauth2orize')
+  , passport = require('koa-passport')
+  , jwt = require('jsonwebtoken')
+  , crypto = require('crypto')
+  , compose = require('koa-compose')
+  , co = require('co')
+;
 
 var config = require('../config');
 
@@ -18,24 +18,24 @@ function generateTokens (client, user) {
 
   const accessTokenPayload = {
     user: user,
-    type: "accessToken",
+    type: 'accessToken',
     jti: crypto.randomBytes(32).toString('base64') // differentiates accesstoken and refreshtoken
   };
 
   const refreshTokenPayload = {
-    type: "refreshToken",
+    type: 'refreshToken',
     jti: crypto.randomBytes(32).toString('base64') // differentiates accesstoken and refreshtoken
   };
 
   const accessTokenOptions = {
     subject: user._id,
-    issuer: "th3",
+    issuer: 'th3',
     expiresInMinutes: config.get('security:accessTokenLife')
   };
 
   const refreshTokenOptions = {
     subject: user._id,
-    issuer: "th3",
+    issuer: 'th3',
     expiresInMinutes: config.get('security:refreshTokenLife')
   };
 
@@ -43,7 +43,7 @@ function generateTokens (client, user) {
     access: jwt.sign(accessTokenPayload, config.get('security:jwtSecret'), accessTokenOptions),
     refresh: jwt.sign(refreshTokenPayload, config.get('security:jwtSecret'), refreshTokenOptions)
   };
-};
+}
 
 // Exchange username & password for access token.
 // test: http POST http://localhost:3000/token client_id=th3official grant_type=password client_secret=asdf username=un password=passwo
@@ -53,10 +53,10 @@ aserver.exchange(oauth2orize.exchange.password(function(client, username, passwo
   // } catch (err) {
   //   return done(err);
   // }
-  user = {_id:"user id", authenticate:function(){return true}}; //mock
+  const user = {_id: 'user id', authenticate: function(){ return true; } }; //mock
 
-  if (!user || !user.authenticate(password)) { 
-    return done(null, false); 
+  if (!user || !user.authenticate(password)) {
+    return done(null, false);
   }
 
   var tokens = generateTokens(client, user);
@@ -73,20 +73,21 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
   const app = require('../index');
 
   co(function* () {
+    let refreshToken;
     try {
-      const refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
+      refreshToken = jwt.verify(refreshTokenJWT, config.get('security:jwtSecret'));
     } catch (err) {
       return done(null, false);
     }
 
-    if (refreshToken.type !== "refreshToken") {
+    if (refreshToken.type !== 'refreshToken') {
       return done(null, false);
     }
 
     // TODO: check if IP address and clientID match
-    
+
     // if refreshToken is in redis, then invalidate refreshToken (user has logged out or has been replaced by another refreshToken)
-    const invalidRefreshToken = yield app.context.models.refreshtoken.findOne({ jti:refreshToken.jti });
+    const invalidRefreshToken = yield app.context.models.refreshtoken.findOne({ jti: refreshToken.jti });
     if (invalidRefreshToken) {
       return done(null, false);
     }
@@ -96,10 +97,10 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
     // } catch (err) {
     //   return done(err);
     // }
-    user = {_id:"user id"}
+    const user = {_id: 'user id'};
 
-    if (!user) { 
-      done(null, false); 
+    if (!user) {
+      done(null, false);
     }
 
     // Invalidate previously valid refreshToken
@@ -132,7 +133,7 @@ exports.token = compose([
 ]);
 
 // login endpoint
-// 
+//
 // Only for first party client!
 exports.login = compose([
   aserver.errorHandler(),
@@ -140,20 +141,20 @@ exports.login = compose([
 ]);
 
 // logout endpoint
-// 
+//
 // add refreshToken to redis to invalidate it from generating new accessTokens
 // Always returns statusCode:200 and empty body
 exports.logout = function* () {
   try {
     const refreshToken = jwt.verify(this.request.body.refresh_token, config.get('security:jwtSecret'));
 
-    if (refreshToken.type === "refreshToken") {
+    if (refreshToken.type === 'refreshToken') {
       // Invalidate refreshToken if previously valid
-      yield this.models.refreshtoken.create(refreshToken)
+      yield this.models.refreshtoken.create(refreshToken);
     }
   } catch (ignore){
     // ignore if invalid refreshToken or duplicate refreshToken in db
-  } 
+  }
 
   this.statusCode = 200;
   this.body = '';

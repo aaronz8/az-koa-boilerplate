@@ -7,7 +7,7 @@ var RefreshToken = Waterline.Collection.extend({
 
   identity: 'refreshtoken',
 
-  connection: "redis",
+  connection: 'redis',
 
   attributes: {
     _client: {

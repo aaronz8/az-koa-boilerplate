@@ -21,18 +21,19 @@ const config = {
   }
 };
 
-module.exports=function(app, models){
+module.exports = function(app, models){
   models.forEach((model) => {
     orm.loadCollection(model);
   });
-  
+
   orm.initialize(config, function(err, db) {
-    if (err) throw err;
+    if (err) {
+      throw err;
+    }
     app.context.models = db.collections;
   });
   return orm;
-}
-
+};
 
 
 // var Waterline = require('waterline');

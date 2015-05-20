@@ -7,7 +7,7 @@
     {}
   ],
   "scripts": {
-    "start": "iojs --harmony_proxies --harmony-arrow-functions index.js",
+    "start": "iojs --harmony_proxies --harmony-arrow-functions --use_strict index.js",
     "predeploy": "echo im about to deploy",
     "postdeploy": "echo ive deployed"
   },

@@ -10,7 +10,7 @@ const config = require('../config');
 // Authenticate client
 // (registered but untrusted since anyone can discover and spoof clientid+secret from web app)
 function authenticateClient(clientId, clientSecret, done) {
-  if (clientId === "th3official") { return done(null, {client: "this is a client", _id: "th3official"}); }
+  if (clientId === 'th3official') { return done(null, {client: 'this is a client', _id: 'th3official'}); }
 }
 
 // Authenticate client
@@ -19,13 +19,14 @@ passport.use(new ClientPasswordStrategy(authenticateClient));
 
 passport.use(new BearerStrategy(function(accessTokenJWT, done) {
   // Verify accessTokenJWT and expiration
+  let accessToken;
   try {
-    const accessToken = jwt.verify(accessTokenJWT, config.get('security:jwtSecret'));
+    accessToken = jwt.verify(accessTokenJWT, config.get('security:jwtSecret'));
   } catch (err) {
     return done(null, false, { message: 'Invalid access_token'});
   }
 
-  if ( accessToken.type !== "accessToken" ) {
+  if ( accessToken.type !== 'accessToken' ) {
     return done(null, false, { message: 'Invalid access_token'});
   }
 
