@@ -17,9 +17,9 @@ var azAuth     = require('./az-auth')
 
 // database
 // TODO: fix this so models can be loaded from several places
-require('./database')(app, [require('./az-auth/models/refresh-token-model')]);
+// require('./database')(app, [require('./az-auth/models/refresh-token-model')]);
 //app.use(require('./database')(azAuth.models));
-
+require('./database')(app, azAuth.models);
 
 // middleware
 app.use(logger());
@@ -42,6 +42,7 @@ app.on('error', function(err){
   if (process.env.NODE_ENV !== 'test') {
     console.log('sent error %s to the cloud', err.message);
     console.log(err.stack);
+    debug(err.stack);
   }
 });
 

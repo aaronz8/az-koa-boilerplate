@@ -2,14 +2,16 @@ var Waterline = require('waterline');
 var orm = new Waterline();
 
 var redis = require('sails-redis');
+var disk = require('sails-disk');
 
 const config = {
 
   // Setup Adapters
   // Creates named adapters that have have been required
   adapters: {
-    'default': redis,
-    redis: redis
+    default: redis,
+    redis: redis,
+    disk: disk
   },
 
   // Build Connections Config
@@ -17,6 +19,9 @@ const config = {
   connections: {
     redis: {
       adapter: 'redis'
+    },
+    disk: {
+      adapter: 'disk'
     }
   }
 };
@@ -27,9 +32,7 @@ module.exports = function(app, models){
   });
 
   orm.initialize(config, function(err, db) {
-    if (err) {
-      throw err;
-    }
+    if (err) throw err;
     app.context.models = db.collections;
   });
   return orm;

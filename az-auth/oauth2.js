@@ -1,3 +1,5 @@
+'use strict';
+
 var oauth2orize = require('koa-oauth2orize')
   , passport = require('koa-passport')
   , jwt = require('jsonwebtoken')
@@ -14,7 +16,7 @@ var config = require('../config');
 var aserver = oauth2orize.createServer();
 
 // Destroys any old tokens and generates a new access and refresh token
-function generateTokens (client, user) {
+function _generateTokens (client, user) {
 
   const accessTokenPayload = {
     user: user,
@@ -49,17 +51,16 @@ function generateTokens (client, user) {
 // test: http POST http://localhost:3000/token client_id=th3official grant_type=password client_secret=asdf username=un password=passwo
 aserver.exchange(oauth2orize.exchange.password(function(client, username, password, scope, done) {
   // try {
-  //   const user = yield User.findOne({ username: username }).exec();
+  //   const user = yield app.context.models.user.findOne({ username: username }).exec();
   // } catch (err) {
   //   return done(err);
   // }
   const user = {_id: 'user id', authenticate: function(){ return true; } }; //mock
 
-  if (!user || !user.authenticate(password)) {
+  if (!user || !user.authenticate(password))
     return done(null, false);
-  }
 
-  var tokens = generateTokens(client, user);
+  var tokens = _generateTokens(client, user);
 
   return done(null, tokens.access, tokens.refresh, {
     'expires_in': config.get('security:tokenLife')
@@ -68,7 +69,7 @@ aserver.exchange(oauth2orize.exchange.password(function(client, username, passwo
 }));
 
 // Exchange refreshToken for new access and refresh tokens.
-// test: http POST http://localhost:3000/token client_id=th3official grant_type=refresh_token client_secret=asdf refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkIjoxNDI1NzE1MTM4MDkyLCJ0b2tlbiI6IjI4Wk01M1NRY2pZUCswcUU4U01pNVlXb3dzdkdyMkN5UnpDSXFJRWpiRm89IiwiaWF0IjoxNDI1NzE1MTM4fQ.mUBSwcBrBcC6Ys8XhXrkugJ-ZkiYME6bYAZVIramLbs"
+// test: http POST http://localhost:3000/token client_id=th3official grant_type=refresh_token client_secret=asdf refresh_token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkIjoxNDI1NzE1MTM4MDkyLCJ0b2tlbiI6IjI4Wk01M1NRY2pZUCswcUU4U01pNVlXb3dzdkdyMkN5UnpDSXFJRWpiRm89IiwiaWF0IjoxNDI1NzE1MTM4fQ.mUBSwcBrBcC6Ys8XhXrkugJ-ZkiYME6bYAZVIramLbs'
 aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshTokenJWT, scope, done) {
   const app = require('../index');
 
@@ -80,17 +81,15 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
       return done(null, false);
     }
 
-    if (refreshToken.type !== 'refreshToken') {
+    if (refreshToken.type !== 'refreshToken')
       return done(null, false);
-    }
 
     // TODO: check if IP address and clientID match
 
     // if refreshToken is in redis, then invalidate refreshToken (user has logged out or has been replaced by another refreshToken)
     const invalidRefreshToken = yield app.context.models.refreshtoken.findOne({ jti: refreshToken.jti });
-    if (invalidRefreshToken) {
+    if (invalidRefreshToken)
       return done(null, false);
-    }
 
     // try {
     //   const user = yield User.findById(refreshToken.sub).exec();
@@ -99,15 +98,14 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
     // }
     const user = {_id: 'user id'};
 
-    if (!user) {
+    if (!user)
       done(null, false);
-    }
 
     // Invalidate previously valid refreshToken
     yield app.context.models.refreshtoken.create(refreshToken);
 
     // Return new tokens
-    const tokens = generateTokens(client, user);
+    const tokens = _generateTokens(client, user);
     done(null, tokens.access, tokens.refresh, {
       'expires_in': config.get('security:accessTokenLife')
     });
@@ -148,10 +146,10 @@ exports.logout = function* () {
   try {
     const refreshToken = jwt.verify(this.request.body.refresh_token, config.get('security:jwtSecret'));
 
-    if (refreshToken.type === 'refreshToken') {
-      // Invalidate refreshToken if previously valid
+    // Invalidate refreshToken if previously valid
+    if (refreshToken.type === 'refreshToken')
       yield this.models.refreshtoken.create(refreshToken);
-    }
+
   } catch (ignore){
     // ignore if invalid refreshToken or duplicate refreshToken in db
   }

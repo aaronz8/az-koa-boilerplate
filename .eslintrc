@@ -9,3 +9,4 @@ rules:
   no-mixed-requires: false
   no-underscore-dangle: false
   no-redeclare: true
+  curly: [2, "multi"]
