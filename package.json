@@ -9,7 +9,8 @@
   "scripts": {
     "start": "iojs --harmony_proxies --harmony-arrow-functions --use_strict index.js",
     "predeploy": "echo im about to deploy",
-    "postdeploy": "echo ive deployed"
+    "postdeploy": "echo ive deployed",
+    "eslint": "./scripts/pre-commit-eslint"
   },
   "main": "index.js",
   "repository": {
@@ -50,6 +51,11 @@
     "waterline": "^0.10.21"
   },
   "devDependencies": {
-    "debug": "^2.1.2"
-  }
+    "debug": "^2.1.2",
+    "eslint": "^0.22.1",
+    "pre-commit": "^1.0.8"
+  },
+  "pre-commit": [
+    "eslint"
+  ]
 }

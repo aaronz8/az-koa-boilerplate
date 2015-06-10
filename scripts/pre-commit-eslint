@@ -1,0 +1,13 @@
+#!/bin/zsh
+
+function lintit () {
+  OUTPUT=$(git diff --cached --name-only | grep -E '(.js)$')
+  a=("${(f)OUTPUT}")
+  e=$(./node_modules/eslint/bin/eslint.js $a)
+  if [[ "$a" != "" && "$e" != "" ]]; then
+    echo "ERROR: Check eslint hints."
+    echo $e
+    exit 1 # reject
+  fi
+}
+lintit

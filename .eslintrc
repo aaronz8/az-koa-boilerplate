@@ -8,3 +8,4 @@ rules:
   strict: false
   no-mixed-requires: false
   no-underscore-dangle: false
+  no-redeclare: true
