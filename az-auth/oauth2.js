@@ -30,13 +30,13 @@ function _generateTokens (client, user) {
   };
 
   const accessTokenOptions = {
-    subject: user._id,
+    subject: user.id,
     issuer: 'th3',
     expiresInMinutes: config.get('security:accessTokenLife')
   };
 
   const refreshTokenOptions = {
-    subject: user._id,
+    subject: user.id,
     issuer: 'th3',
     expiresInMinutes: config.get('security:refreshTokenLife')
   };
@@ -48,22 +48,25 @@ function _generateTokens (client, user) {
 }
 
 // Exchange username & password for access token.
-// test: http POST http://localhost:3000/token client_id=th3official grant_type=password client_secret=asdf username=un password=passwo
-aserver.exchange(oauth2orize.exchange.password(function(client, username, password, scope, done) {
-  // try {
-  //   const user = yield app.context.models.user.findOne({ username: username }).exec();
-  // } catch (err) {
-  //   return done(err);
-  // }
-  const user = {_id: 'user id', authenticate: function(){ return true; } }; //mock
+// test: http POST http://localhost:3000/token client_id=th3official grant_type=password client_secret=asdf username=email password=passwo
+aserver.exchange(oauth2orize.exchange.password(function(client, email, password, scope, done) {
+  const app = require('../index');
 
-  if (!user || !user.authenticate(password))
-    return done(null, false);
+  co(function* () {
+    const credential = yield app.context.models.credential.findOne({ email: email }).populate('_user');
+    console.log(credential);
 
-  var tokens = _generateTokens(client, user);
+    if (!credential || !credential.authenticate(password))
+      return done(null, false);
 
-  return done(null, tokens.access, tokens.refresh, {
-    'expires_in': config.get('security:tokenLife')
+    var tokens = _generateTokens(client, credential._user); // TODO: should this be `user` instead of `token`?
+
+    return done(null, tokens.access, tokens.refresh, {
+      'expires_in': config.get('security:tokenLife')
+    });
+  }).catch((err) => {
+    done(err);
+    console.log(err);
   });
 
 }));
@@ -84,19 +87,13 @@ aserver.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToke
     if (refreshToken.type !== 'refreshToken')
       return done(null, false);
 
-    // TODO: check if IP address and clientID match
-
     // if refreshToken is in redis, then invalidate refreshToken (user has logged out or has been replaced by another refreshToken)
     const invalidRefreshToken = yield app.context.models.refreshtoken.findOne({ jti: refreshToken.jti });
     if (invalidRefreshToken)
       return done(null, false);
 
-    // try {
-    //   const user = yield User.findById(refreshToken.sub).exec();
-    // } catch (err) {
-    //   return done(err);
-    // }
-    const user = {_id: 'user id'};
+    // Refresh user object
+    const user = yield app.context.models.user.findOne(refreshToken.sub);
 
     if (!user)
       done(null, false);

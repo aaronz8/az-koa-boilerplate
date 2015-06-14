@@ -69,7 +69,7 @@ var Credential = Waterline.Collection.extend({
   beforeCreate: function(values, next) {
     if (values.provider === 'local') {
       if (!values.email) next('Email cannot be blank'); // TODO check for valid email?
-      if (!values.password && !values.hashedPassword) next('Password cannot be blank');
+      if (!values.password && !values.hashedPassword) next('Password cannot be blank'); // TODO: handle with sails validation messages.
     }
     if (values.password) {
       values.salt = _makeSalt();
