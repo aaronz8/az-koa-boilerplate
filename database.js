@@ -2,7 +2,6 @@ var Waterline = require('waterline');
 var orm = new Waterline();
 
 var redis = require('sails-redis');
-var disk = require('sails-disk');
 
 const config = {
 
@@ -10,8 +9,7 @@ const config = {
   // Creates named adapters that have have been required
   adapters: {
     default: redis,
-    redis: redis,
-    disk: disk
+    redis: redis
   },
 
   // Build Connections Config
@@ -19,10 +17,8 @@ const config = {
   connections: {
     redis: {
       adapter: 'redis'
-    },
-    disk: {
-      adapter: 'disk'
     }
+
   }
 };
 
@@ -38,30 +34,6 @@ module.exports = function(app, models){
   return orm;
 };
 
-
-// var Waterline = require('waterline');
-// var orm = new Waterline();
-// var Promise = require('bluebird');
-
-// var redis = require('sails-redis');
-
-// const config = {
-
-//   // Setup Adapters
-//   // Creates named adapters that have have been required
-//   adapters: {
-//     'default': redis,
-//     redis: redis
-//   },
-
-//   // Build Connections Config
-//   // Setup connections using the named adapter configs
-//   connections: {
-//     redis: {
-//       adapter: 'redis'
-//     }
-//   }
-// };
 
 // module.exports = function(models) {
 //   return function* (next) {

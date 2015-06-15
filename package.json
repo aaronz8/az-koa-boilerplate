@@ -7,9 +7,10 @@
     {}
   ],
   "scripts": {
-    "start": "iojs --harmony_proxies --harmony-arrow-functions --use_strict index.js",
+    "start": "iojs --harmony_proxies --harmony-arrow-functions index.js",
     "predeploy": "echo im about to deploy",
     "postdeploy": "echo ive deployed",
+    "dev": "redis-server & nodemon --harmony_proxies --harmony-arrow-functions",
     "eslint": "./scripts/pre-commit-eslint"
   },
   "main": "index.js",
@@ -46,7 +47,6 @@
     "passport-http": "^0.2.2",
     "passport-http-bearer": "^1.0.1",
     "passport-oauth2-client-password": "^0.1.2",
-    "sails-disk": "^0.10.8",
     "sails-redis": "^0.10.4",
     "waterline": "^0.10.23"
   },

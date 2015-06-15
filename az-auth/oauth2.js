@@ -59,7 +59,7 @@ aserver.exchange(oauth2orize.exchange.password(function(client, email, password,
     if (!credential || !credential.authenticate(password))
       return done(null, false);
 
-    var tokens = _generateTokens(client, credential._user); // TODO: should this be `user` instead of `token`?
+    var tokens = _generateTokens(client, credential._user);
 
     return done(null, tokens.access, tokens.refresh, {
       'expires_in': config.get('security:tokenLife')

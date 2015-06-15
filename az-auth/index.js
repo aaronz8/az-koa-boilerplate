@@ -13,7 +13,6 @@ auth
   .post('/logout', require('./oauth2').logout)
   .post('/user', function* () {
 
-    // TODO: create credential first and, if successful, update it with _user.
     var credential = {
       provider: 'local',
       email: this.request.body.email || '',
