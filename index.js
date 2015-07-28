@@ -2,8 +2,7 @@
 var path       = require('path')
   , debug      = require('debug')('az')
   , logger     = require('koa-logger')
-  , router     = require('koa-router')
-  , mount      = require('koa-mount')
+  , router     = require('koa-router')()
   , cors       = require('koa-cors')
   , favicon    = require('koa-favicon')
   , bodyParser = require('koa-bodyparser')
@@ -22,18 +21,21 @@ var azAuth     = require('./az-auth')
 require('./database')(app, azAuth.models);
 
 // middleware
-app.use(logger());
-app.use(bodyParser());
-app.use(passport.initialize());
-app.use(cors({ origin: true, credentials: true, headers: ['authorization', 'content-type', 'accept'] }));
-app.use(router(app));
-app.use(favicon(path.resolve(__dirname, 'public/favicon.ico')));
+app
+  .use(logger())
+  .use(bodyParser())
+  .use(passport.initialize())
+  .use(cors({ origin: true, credentials: true, headers: ['authorization', 'content-type', 'accept'] }))
+  .use(router.routes())
+  .use(router.allowedMethods())
+  .use(favicon(path.resolve(__dirname, 'public/favicon.ico')))
+;
 
 // Modules
-app.use(mount('/oauth2', azAuth.middleware));
+router.use('/oauth2', azAuth.router.routes());
 
 // API routes
-app.get('/', passport.authenticate('bearer', { session: false }), function*() {
+router.get('/', passport.authenticate('bearer', { session: false }), function*() {
   this.body = 'here';
 });
 

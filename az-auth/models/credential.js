@@ -4,7 +4,7 @@ var crypto = require('crypto')
   , Waterline = require('waterline')
 ;
 
-var _providers = ['local']; // 'google', 'facebook', 'twitter', 'github', 'bamboohr', 'okta'
+var _providers = ['github']; // 'google', 'facebook', 'twitter', 'github', 'bamboohr', 'okta'
 
 function _makeSalt () {
   return crypto.randomBytes(16).toString('base64');
@@ -43,7 +43,7 @@ var Credential = Waterline.Collection.extend({
     },
 
     // 3rd-party logins
-    key: {
+    uid: {
       type: 'string',
       unique: true
       //sparse: true

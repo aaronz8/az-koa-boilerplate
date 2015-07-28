@@ -38,3 +38,69 @@ passport.use(new BearerStrategy(function(accessTokenJWT, done) {
   var info = { scope: '*' };
   done(null, user, info);
 }));
+
+
+// GITHUB
+// TODO: Move into config file so az-auth can be split off
+const GithubStrategy  = require('passport-github').Strategy;
+
+passport.use(new GithubStrategy({
+  clientID: config.get('security:github:clientID'),
+  clientSecret: config.get('security:github:clientSecret'),
+  passReqToCallback: true
+}, function(req, accessToken, refreshToken, profile, done) {
+
+  const app = require('../index');
+  const User = app.context.models.user;
+  const Credential = app.context.models.credential;
+
+  Credential.findOrCreate({
+    provider: 'github', 
+    uid: profile.id
+  })
+  .then( credential => {
+    // Get existing credential + user
+    if (credential._user)
+      if (req.user && req.user._id !== credential._user )
+        return done('Logged in user is different from user associated with these Github credentials.');
+      else
+        return done(null, credential._user);
+
+    // Get new credential + update/create user
+    else
+      if (req.user) {
+        credential._user = req.user.id;
+        return credential.save()
+        .then( () => {
+          return done(null, credential._user);
+        });
+      } else
+        return User.create({
+          profile: profile
+        })
+        .then( user => {
+          credential._user = user.id;
+          return credential.save();
+        })
+        .then( () => {
+          return done(null, credential._user);
+        });
+  })
+  .catch( err => {
+    // TODO: if user or credential, delete
+    return done(err);
+  });
+
+}));
+
+passport.serializeUser(function(id, done) {
+  done(null, id);
+});
+
+passport.deserializeUser(function(id, done) {
+  const app = require('../index');
+  const User = app.context.models.user;
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});

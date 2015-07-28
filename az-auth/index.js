@@ -1,13 +1,10 @@
-var router = require('koa-router')
-  , koa = require('koa')
-  , auth = koa()
+var router = require('koa-router')()
+  , passport = require('koa-passport')
 ;
-require('koa-passport');
 
 require('./auth');
 
-auth
-  .use(router(auth))
+router
   .post('/login', require('./oauth2').login)
   .post('/token', require('./oauth2').token)
   .post('/logout', require('./oauth2').logout)
@@ -49,9 +46,15 @@ auth
     this.status = 200;
     this.body = [u, c];
   })
+
+  // GITHUB
+  .get('/auth/github', passport.authenticate('github'))
+  .get('/auth/github/callback',
+    passport.authenticate('github', { successRedirect: '/success',
+                                      failureRedirect: '/failure' }))
 ;
 
 module.exports = {
-  middleware: auth,
+  router: router,
   models: require('./model-loader')
 };

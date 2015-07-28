@@ -4,7 +4,8 @@ env:
 
 rules:
   quotes: [1, single]
-  no-multi-spaces: false
+  no-multi-spaces: 2
+  key-spacing: [2, { align: "value" }]
   strict: false
   no-mixed-requires: false
   no-underscore-dangle: false
