@@ -21,21 +21,38 @@ var Credential = Waterline.Collection.extend({
 
   connection: 'redis',
 
+  types: {
+    password: function(password) {
+      // invalidate if password with non-local provider
+      if (this.provider !== 'local') return (typeof password === 'undefined');
+
+      if (password.length < 8) return false;
+      return /[A-Z]/.test(password) && /[0-9]/.test(password);
+    },
+
+    myemail: function(email) {
+      // invalidate if email with non-local provider
+      if (this.provider !== 'local') return (typeof email === 'undefined');
+
+      return email && validator.isEmail(email);
+    }
+  },
+
   attributes: {
     provider: {
+      required: true,
       type: 'string',
       enum: _providers
     },
 
     email: {
-      type: 'email',
-      unique: true
-      // lowercase: true
-      // sparse: true
+      type: 'string',
+      myemail: true
     },
 
-    hashedPassword: {
-      type: 'string'
+    password: {
+      type: 'string',
+      password: true
     },
 
     salt: {
@@ -45,8 +62,12 @@ var Credential = Waterline.Collection.extend({
     // 3rd-party logins
     uid: {
       type: 'string',
-      unique: true
+      // unique: true
       //sparse: true
+    },
+
+    accessToken: {
+      type: 'string'
     },
 
     _user: {
@@ -54,27 +75,28 @@ var Credential = Waterline.Collection.extend({
     },
 
     authenticate: function(plainText) {
-      return (_encryptPassword(this.salt, plainText) === this.hashedPassword);
+      return (_encryptPassword(this.salt, plainText) === this.password);
     },
 
     toJSON: function() {
       var obj = this.toObject();
-      delete obj.hashedPassword;
+      delete obj.password;
       delete obj.salt;
       return obj;
     }
   },
 
-  // TODO: consider 3rd party login cases and update cases. before/afterValidate
-  beforeCreate: function(values, next) {
-    if (values.provider === 'local') {
-      if (!values.email) next('Email cannot be blank'); // TODO check for valid email?
-      if (!values.password && !values.hashedPassword) next('Password cannot be blank'); // TODO: handle with sails validation messages.
-    }
+  beforeValidate: function(values, next) {
+    if (values.email) 
+      values.email = values.email.toLowerCase().trim;
+
+    next();
+  },
+
+  afterValidate: function(values, next) {
     if (values.password) {
       values.salt = _makeSalt();
-      values.hashedPassword = _encryptPassword(values.salt, values.password);
-      delete values.password;
+      values.password = _encryptPassword(values.salt, values.password);
     }
 
     next();

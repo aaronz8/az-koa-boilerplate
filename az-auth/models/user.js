@@ -1,8 +1,8 @@
 // User Account
 
-var Waterline = require('waterline');
+const Waterline = require('waterline');
 
-var User = Waterline.Collection.extend({
+const User = Waterline.Collection.extend({
 
   identity: 'user',
 
@@ -17,6 +17,35 @@ var User = Waterline.Collection.extend({
       collection: 'credential',
       via: '_user'
     }
+
+    // addCredential: function*(credential) {
+    //   return;
+    // }
+  },
+
+  /**
+   * Create new User with new Credential (Must call with context)
+   * @example yield this.models.user.createWithCredential.call(this, {a:'stuff'}, {});
+   * @param {Object} user          New user object
+   * @param {Object} credential    New credential object
+   * @return {Object} {user, credential}
+   */
+  createWithCredential: function*(user, credential) {
+    'use strict';
+    let newUser, newCredential;
+    try {
+      newUser = yield this.models.user.create(user);
+      credential._user = newUser.id;
+      newCredential = yield this.models.credential.create(credential);
+    } catch (err){
+      // Clean up orphan user
+      if (newUser) yield newUser.destroy();
+
+      // Pass on error to caller
+      throw new Error(err);
+    }
+
+    return {user: newUser, credential: newCredential};
   }
 });
 
