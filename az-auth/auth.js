@@ -48,7 +48,7 @@ passport.use(new GithubStrategy({
   clientID: config.get('security:github:clientID'),
   clientSecret: config.get('security:github:clientSecret'),
   passReqToCallback: true
-}, function(req, accessToken, refreshToken, profile, done) {
+}, function(req, accessToken, _refreshToken, profile, done) {
 
   const app = require('../index');
   const User = app.context.models.user;
@@ -61,15 +61,23 @@ passport.use(new GithubStrategy({
   .then( credential => {
     // Get existing credential + user
     if (credential._user)
-      if (req.user && req.user._id !== credential._user )
-        return done('Logged in user is different from user associated with these Github credentials.');
-      else
-        return done(null, credential._user);
+      if (req.user && req.user.id !== credential._user )
+        return done(new Error('Logged in user is different from user associated with these Github credentials.'));
+      else {
+        console.log('accessToken', accessToken);
+        credential.accessToken = accessToken;
+        return credential.save()
+        .then( () => {
+          return done(null, credential._user);
+        });
+      }
 
     // Get new credential + update/create user
     else
       if (req.user) {
         credential._user = req.user.id;
+        credential.accessToken = accessToken;
+
         return credential.save()
         .then( () => {
           return done(null, credential._user);
@@ -80,6 +88,8 @@ passport.use(new GithubStrategy({
         })
         .then( user => {
           credential._user = user.id;
+          credential.accessToken = accessToken;
+
           return credential.save();
         })
         .then( () => {
@@ -100,7 +110,10 @@ passport.serializeUser(function(id, done) {
 passport.deserializeUser(function(id, done) {
   const app = require('../index');
   const User = app.context.models.user;
+  // User.findById(id).populate('_credentials').exec(function(err, user) {
+  //   done(err, user[0]);
+  // });
   User.findById(id, function(err, user) {
-    done(err, user);
+    done(err, user[0]);
   });
 });
