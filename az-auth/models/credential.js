@@ -88,7 +88,7 @@ var Credential = Waterline.Collection.extend({
 
   beforeValidate: function(values, next) {
     if (values.email) 
-      values.email = values.email.toLowerCase().trim;
+      values.email = values.email.toLowerCase().trim();
 
     next();
   },
